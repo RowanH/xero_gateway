@@ -37,7 +37,7 @@ module XeroGateway
     attr_accessor :line_items_downloaded
   
     # All accessible fields
-    attr_accessor :invoice_id, :invoice_number, :invoice_type, :invoice_status, :date, :due_date, :reference, :branding_theme_id, :line_amount_types, :currency_code, :line_items, :contact, :payments, :fully_paid_on, :amount_due, :amount_paid, :amount_credited, :sent_to_contact, :url
+    attr_accessor :sub_total, :total_tax, :total, :invoice_id, :invoice_number, :invoice_type, :invoice_status, :date, :due_date, :reference, :branding_theme_id, :line_amount_types, :currency_code, :line_items, :contact, :payments, :fully_paid_on, :amount_due, :amount_paid, :amount_credited, :sent_to_contact, :url
 
     
     def initialize(params = {})
@@ -147,7 +147,7 @@ module XeroGateway
     end
     
     def ==(other)
-      ["invoice_number", "invoice_type", "invoice_status", "reference", "currency_code", "line_amount_types", "contact", "line_items"].each do |field|
+      ["sub_total", "total_tax", "total", "invoice_number", "invoice_type", "invoice_status", "reference", "currency_code", "line_amount_types", "contact", "line_items"].each do |field|
         return false if send(field) != other.send(field)
       end
       
@@ -186,6 +186,9 @@ module XeroGateway
         b.InvoiceID self.invoice_id if self.invoice_id
         b.InvoiceNumber self.invoice_number if invoice_number
         b.Type self.invoice_type
+        b.SubTotal self.sub_total if self.sub_total
+        b.TotalTax self.total_tax if self.total_tax
+        b.Total self.total if self.total
         b.CurrencyCode self.currency_code if self.currency_code
         contact.to_xml(b)
         b.Date Invoice.format_date(self.date || Date.today)
@@ -212,6 +215,9 @@ module XeroGateway
           when "InvoiceNumber" then invoice.invoice_number = element.text            
           when "Type" then invoice.invoice_type = element.text
           when "CurrencyCode" then invoice.currency_code = element.text
+          when "SubTotal" then invoice.sub_total = element.text
+          when "TotalTax" then invoice.total_tax = element.text
+          when "Total" then invoice.total = element.text
           when "Contact" then invoice.contact = Contact.from_xml(element)
           when "Date" then invoice.date = parse_date(element.text)
           when "DueDate" then invoice.due_date = parse_date(element.text)
