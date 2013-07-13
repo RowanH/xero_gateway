@@ -77,14 +77,16 @@ module XeroGateway
           when "Description" then item.description = element.text
           when "Code" then item.code = element.text
           when "PurchaseDetails"
+            # Figre out nesting. 
             element.children.each do | element |
-              item.unit_price = element.text if element.name == "UnitPrice"
-              item.account_code = element.text if element.name == "AccountCode"
+              item.purchase_unit_price = element.text if element.name == "UnitPrice"
+              item.purchase_account_code = element.text if element.name == "AccountCode"
             end
           when "SalesDetails"
+            # Figre out nesting. 
             element.children.each do | element |
-              item.unit_price = element.text if element.name == "UnitPrice"
-              item.account_code = element.text if element.name == "AccountCode"
+              item.sales_unit_price = element.text if element.name == "UnitPrice"
+              item.sales_account_code = element.text if element.name == "AccountCode"
             end
         end
       end
