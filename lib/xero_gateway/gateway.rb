@@ -543,6 +543,29 @@ module XeroGateway
       parse_response(response_xml, {:request_xml => request_xml}, {:request_signature => 'PUT/payments'})
     end
 
+    # Factory method for building new CreditNote objects associated with this gateway.
+    def build_item(item = {})
+      case item
+        when Item then     item.gateway = self
+        when Hash then        item = Item.new(item.merge(:gateway => self))
+      end
+      item
+    end
+
+    #
+    # Create Payment record in Xero
+    #
+    def create_item(item)
+      b = Builder::XmlMarkup.new
+
+      request_xml = b.Items do
+        item.to_xml(b)
+      end
+
+      response_xml = http_put(@client, "#{xero_url}/Items", request_xml)
+      parse_response(response_xml, {:request_xml => request_xml}, {:request_signature => 'PUT/items'})
+    end
+
     private
 
     def get_contact(contact_id = nil, contact_number = nil)
@@ -676,6 +699,7 @@ module XeroGateway
           when "ProviderName" then response.provider = element.text
           when "DateTimeUTC" then response.date_time = element.text
           when "Contact" then response.response_item = Contact.from_xml(element, self)
+          when "Items" then element.children.each {|child| response.response_item << Item.from_xml(child) }
           when "Invoice" then response.response_item = Invoice.from_xml(element, self, {:line_items_downloaded => options[:request_signature] != "GET/Invoices"})
           when "BankTransaction"
             response.response_item = BankTransaction.from_xml(element, self, {:line_items_downloaded => options[:request_signature] != "GET/BankTransactions"})
