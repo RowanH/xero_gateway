@@ -555,15 +555,24 @@ module XeroGateway
     #
     # Create Payment record in Xero
     #
-    def create_item(item)
+    def save_item(item)
       b = Builder::XmlMarkup.new
 
       request_xml = b.Items do
         item.to_xml(b)
       end
 
-      response_xml = http_put(@client, "#{xero_url}/Items", request_xml)
-      parse_response(response_xml, {:request_xml => request_xml}, {:request_signature => 'PUT/items'})
+      if item.item_id.nil?
+        # Create new invoice record.
+        response_xml = http_put(@client, "#{xero_url}/Items", request_xml)
+        parse_response(response_xml, {:request_xml => request_xml}, {:request_signature => 'PUT/items'})
+      else
+        # Update existing invoice record.
+        response_xml = http_post(@client, "#{xero_url}/Items", request_xml)
+        parse_response(response_xml, {:request_xml => request_xml}, {:request_signature => 'POST/items'})
+      end
+
+
     end
 
     private

@@ -54,6 +54,7 @@ module XeroGateway
       b.Item {
         b.Code code
         b.Description description
+        b.ItemID item_id
         if purchase_details?
           b.PurchaseDetails {
             b.UnitPrice purchase_unit_price
